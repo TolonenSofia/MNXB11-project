@@ -1,26 +1,35 @@
+# Set the compiler to g++
 CXX := g++
+
+# Compiler warnings, optimizations, and C++ standard
 CXXWARNINGS := -Wall -Wextra -Werror
 CXXOPT := -O3
 CXXSTD := -std=c++17
-INCLUDES := -I include
+
+# Include directories
+INCLUDES := -I include -I external/include  # Include CLI11 headers
+
+# Compiler flags
 CXXFLAGS := $(CXXWARNINGS) $(CXXSTD) $(CXXOPT) $(INCLUDES)
+
+# Linker flags (empty for now, but can be used for future libraries)
 LDFLAGS :=
 
+# Phony target so 'make clean' works without considering it a real file
 .PHONY: all clean
 
+# Target to build the main executable
 all: main
 
-# If you add new source files in the src/ directory, remember to add the
-# corresponding object file as a dependency here so that Make knows that it
-# should build it and link to it
-#
-# Remove the Example object file when you are done looking at it, it doesn't
-# contribute to the executable!
-main: main.cxx src/Example.o
+# Link main.cxx with object files (add other object files as needed)
+main: main.cxx
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
+# Rule to build object files from .cxx files in src/
 src/%.o: src/%.cxx
 	$(CXX) $(CXXFLAGS) $^ -c -o $@
 
+# Clean up generated object files and executables
 clean:
 	rm -v src/*.o main
+
