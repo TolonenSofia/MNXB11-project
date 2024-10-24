@@ -6,14 +6,18 @@ CXXWARNINGS := -Wall -Wextra -Werror
 CXXOPT := -O3
 CXXSTD := -std=c++17
 
+ROOTINC := $(shell root-config --incdir)
+ROOTLIBS := $(shell root-config --glibs)
+
+
 # Include directories
-INCLUDES := -I include -I external/include  # Include CLI11 headers
+INCLUDES := -I include -I external/include -I$(ROOTINC) # Include CLI11 headers
 
 # Compiler flags
 CXXFLAGS := $(CXXWARNINGS) $(CXXSTD) $(CXXOPT) $(INCLUDES)
 
 # Linker flags (empty for now, but can be used for future libraries)
-LDFLAGS :=
+LDFLAGS := $(ROOTLIBS)
 
 # Phony target so 'make clean' works without considering it a real file
 .PHONY: all clean

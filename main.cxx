@@ -2,8 +2,10 @@
 #include <fstream>
 #include <string>
 #include <vector>
-#include <sstream>   // To help with splitting the CSV line
-#include <CLI11/CLI.hpp>  // CLI11 for command line arguments
+#include <sstream>
+#include <CLI11/CLI.hpp>
+#include "date/date.h"  // Include the date library
+#include <chrono>
 
 // Function to split a string by a delimiter (used to split CSV rows)
 std::vector<std::string> split_line(const std::string &line, char delimiter = ',') {
@@ -19,7 +21,7 @@ std::vector<std::string> split_line(const std::string &line, char delimiter = ',
 }
 
 int main(int argc, char *argv[]) {
-    CLI::App app{"CSV File Reader"};
+    CLI::App app{"CSV File Reader with Date Support"};
 
     // Command line option to accept the input file
     std::string input_file;
@@ -43,9 +45,9 @@ int main(int argc, char *argv[]) {
 
     // Read and output the file content line by line
     std::string line;
-    int line_count = 0;  // Counter to track how many lines we read
+    int line_count = 0;
 
-    // Read the header line first if necessary
+    // Read the header line first (assuming there is a header)
     if (std::getline(file, line)) {
         std::vector<std::string> header = split_line(line);
         std::cout << "Header: ";
@@ -55,14 +57,31 @@ int main(int argc, char *argv[]) {
         std::cout << std::endl;
     }
 
-    // Read each remaining row
+    // Use date library in the loop to print dates
+    using namespace date;
+    using namespace std::chrono;
+
+    // Read each row
     while (std::getline(file, line)) {
         std::vector<std::string> row = split_line(line);
-        std::cout << "Row " << line_count << ": ";
-        for (const auto &col : row) {
-            std::cout << col << " ";
+        
+        // Assume CSV structure: day, year, month, ignoreme, measurement
+        if (row.size() >= 5) {
+            // Convert the int values into date-specific types
+            date::year y{std::stoi(row[1])};
+            date::month m{static_cast<unsigned>(std::stoi(row[2]))};  // Ensure month is unsigned
+            date::day d{static_cast<unsigned>(std::stoi(row[0]))};    // Ensure day is unsigned
+
+            // Create a date from the year, month, and day
+            year_month_day ymd{y, m, d};
+
+            // Get the weekday from the date
+            auto weekday = date::weekday{sys_days{ymd}};
+
+            std::cout << "Date: " << ymd << " (" << weekday << ") ";
+            std::cout << "Measurement: " << row[4] << std::endl;
         }
-        std::cout << std::endl;
+
         line_count++;
     }
 
@@ -73,3 +92,4 @@ int main(int argc, char *argv[]) {
     file.close();
     return 0;
 }
+
